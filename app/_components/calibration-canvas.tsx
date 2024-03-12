@@ -17,7 +17,7 @@ import {
 } from "@/_lib/point";
 import { TransformSettings } from "@/_lib/transform-settings";
 import { CornerColorHex } from "@/_components/theme/colors";
-import useProgArrowKeyPoints from "@/_hooks/useProgArrowKeyPoints";
+import useProgArrowKeyPerspectivePoints from "@/_hooks/useProgArrowKeyPerspectivePoints";
 
 const maxPoints = 4; // One point per vertex in rectangle
 const PRECISION_MOVEMENT_THRESHOLD = 15;
@@ -63,35 +63,42 @@ function draw(
     ctx.strokeStyle = "#fff";
     drawGrid(ctx, width, height, perspective, 0, ptDensity);
 
+    const perspectiveScalingFactor = Math.min((height/18), (width/24))*ptDensity;
+    console.log(ptDensity)
+    const pretransformedPoints = [
+      { x: 0, y: 0},
+      { x: width*ptDensity, y: 0},
+      { x: width*ptDensity, y: height*ptDensity},
+      { x: 0, y: height*ptDensity}
+    ];
     if (displayAllCorners) {
-      points.forEach((point, index) => {
+      pretransformedPoints.forEach((point, index) => {
         ctx.beginPath();
         ctx.strokeStyle = getStrokeStyle(index);
         if (index !== pointToModify) {
-          ctx.arc(point.x, point.y, 10, 0, 2 * Math.PI);
+          drawCircle(ctx, point, 1*perspectiveScalingFactor, perspective, 36);
           ctx.lineWidth = 4;
         } else {
           if (isPrecisionMovement) {
-            drawCrosshair(ctx, point, 20);
+            drawCrosshair(ctx, point, perspective, 1*perspectiveScalingFactor);
             ctx.lineWidth = 2;
           } else {
-			ctx.arc(point.x, point.y, 20, 0, 2 * Math.PI);
+            drawCircle(ctx, point, 2*perspectiveScalingFactor, perspective, 36);
             ctx.lineWidth = 4;
           }
         }
         ctx.stroke();
       });
     } else if (pointToModify !== null) {
-      ctx.beginPath();
-      ctx.arc(
-        points[pointToModify].x,
-        points[pointToModify].y,
-        20,
-        0,
-        2 * Math.PI,
-      );
+      const point = pretransformedPoints[pointToModify];
+      if (isPrecisionMovement) {
+        drawCrosshair(ctx, point, perspective, 1*perspectiveScalingFactor);
+        ctx.lineWidth = 2;
+      } else {
+        drawCircle(ctx, point, 2*perspectiveScalingFactor, perspective, 36);
+        ctx.lineWidth = 4;
+      }
       ctx.strokeStyle = getStrokeStyle(pointToModify);
-      ctx.lineWidth = 4;
       ctx.stroke();
     }
   } else {
@@ -166,13 +173,40 @@ function drawLine(
   ctx.stroke();
 }
 
-function drawCrosshair(ctx: CanvasRenderingContext2D, point: Point, size: number) {
-  const halfSize = size / 2;
+function drawCrosshair(ctx: CanvasRenderingContext2D, center: Point, matrix: Matrix, size: number = 10) {
+  const transformedPoints = transformPoints([
+    {x: center.x + size, y: center.y},
+    {x: center.x - size, y: center.y},
+    {x: center.x, y: center.y + size},
+    {x: center.x,  y: center.y - size}
+  ], matrix)
   ctx.beginPath();
-  ctx.moveTo(point.x - halfSize, point.y);
-  ctx.lineTo(point.x + halfSize, point.y);
-  ctx.moveTo(point.x, point.y - halfSize);
-  ctx.lineTo(point.x, point.y + halfSize);
+  ctx.moveTo(transformedPoints[0].x, transformedPoints[0].y);
+  ctx.lineTo(transformedPoints[1].x, transformedPoints[1].y);
+  ctx.moveTo(transformedPoints[2].x, transformedPoints[2].y);
+  ctx.lineTo(transformedPoints[3].x, transformedPoints[3].y);
+}
+
+function drawCircle(ctx: CanvasRenderingContext2D, center: Point, radius: number, matrix: Matrix, segments: number = 36) {
+  const points = Array(segments).fill(null).map((_, index) => {
+    const angle = (index / segments) * 2 * Math.PI; // Angle for this segment
+    return {
+      x: center.x + radius * Math.cos(angle),
+      y:center.y + radius * Math.sin(angle),
+    };
+  });
+
+  const transformedPoints = transformPoints(points, matrix); // Apply matrix transformation to all points
+
+  ctx.beginPath();
+  transformedPoints.forEach((point, index) => {
+    if (index === 0) {
+      ctx.moveTo(point.x, point.y);
+    } else {
+      ctx.lineTo(point.x, point.y);
+    }
+  });
+  ctx.closePath(); // Connect the last point with the first one
 }
 
 function drawPolygon(ctx: CanvasRenderingContext2D, points: Point[]): void {
@@ -232,7 +266,7 @@ export default function CalibrationCanvas({
 
   useEffect(() => {
     if (isPrecisionMovement && pointToModify !== null && points.length > pointToModify)
-	  setPrecisionActivationPoint(prevPoint => points[pointToModify]);
+    setPrecisionActivationPoint(prevPoint => points[pointToModify]);
   }, [isPrecisionMovement, pointToModify]);
 
   useEffect(() => {
@@ -291,7 +325,7 @@ export default function CalibrationCanvas({
       // Set a timeout to activate precision movement after the delay
       const timeoutId = setTimeout(() => {
         if (!isPrecisionMovement)
-			setIsPrecisionMovement(true);
+      setIsPrecisionMovement(true);
       }, PRECISION_MOVEMENT_DELAY);
 
       // Store the timeout ID to clear it if needed
@@ -312,19 +346,19 @@ export default function CalibrationCanvas({
         dragStartTime !== null &&
         dragStartMousePoint !== null &&
         Date.now() - dragStartTime > PRECISION_MOVEMENT_DELAY &&
-		Math.sqrt(sqrdist(dragStartMousePoint, p)) < PRECISION_MOVEMENT_THRESHOLD &&
+    Math.sqrt(sqrdist(dragStartMousePoint, p)) < PRECISION_MOVEMENT_THRESHOLD &&
         timeoutId != null 
       ) {
         setIsPrecisionMovement(true);
         if (pointToModify !== null)
-			setPrecisionActivationPoint(points[pointToModify]);
+      setPrecisionActivationPoint(points[pointToModify]);
       }
 
       if (
         !isPrecisionMovement &&
         dragStartTime !== null &&
         dragStartMousePoint !== null &&
-		Math.sqrt(sqrdist(dragStartMousePoint, p)) > PRECISION_MOVEMENT_THRESHOLD &&
+    Math.sqrt(sqrdist(dragStartMousePoint, p)) > PRECISION_MOVEMENT_THRESHOLD &&
         timeoutId != null 
       ) {
         // Clear the timeout when the mouse is released
@@ -449,7 +483,7 @@ export default function CalibrationCanvas({
     ],
   );
 
-  useProgArrowKeyPoints(points, setPoints, pointToModify, isCalibrating);
+  useProgArrowKeyPerspectivePoints(points, setPoints, pointToModify, width, height, perspective, ptDensity, isCalibrating);
 
   return (
     <canvas
