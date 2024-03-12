@@ -25,9 +25,13 @@ export default function useProgArrowKeyPerspectivePoints(
       { x: 0, y: height*ptDensity}
     ];
 
-    /* Dots per unit. Amount of arrow spaces it takes to move 1 unit (either inch or cm) */
-    const dpu = 40;
-    const perspectiveScalingFactor = Math.min((height/18), (width/24))*ptDensity/dpu;
+    /* Dots per inch. Amount of arrow spaces it takes to move 1 inch.
+       Setting this to 32 means the projected image of the calibration point
+       will move 1/32nd of an inch every time the arrow key is pressed. */
+    const dpi = 32;
+    /* Scale DPI to normalize for different units */
+    const dpi_scaled = dpi*(ptDensity/96)
+    const perspectiveScalingFactor = Math.min((height/18), (width/24))*ptDensity/dpi_scaled;
     
     const start_point = pretransformedPoints[pointToModify];
     const end_point = {x:start_point.x+(vector.x*perspectiveScalingFactor), y: start_point.y+(vector.y*perspectiveScalingFactor)}
