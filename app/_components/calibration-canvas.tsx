@@ -14,6 +14,7 @@ import {
   OverlayMode,
   CanvasState
 } from "@/_lib/drawing";
+import { Tool } from "@/_lib/tools/tool";
 import { CM, IN, getPtDensity } from "@/_lib/unit";
 import { getPerspectiveTransform } from "@/_lib/geometry";
 import {
@@ -144,6 +145,10 @@ function draw(cs: CanvasState): void {
         drawBorder(cs, cs.darkColor, cs.gridLineColor);
         drawPaperSheet(cs);
     }
+		
+		if (cs.activeTool !== null) {
+			cs.activeTool.draw(cs)
+		}
   }
 }
 
@@ -406,6 +411,7 @@ export default function CalibrationCanvas({
   transformSettings,
   setTransformSettings,
   overlayMode,
+	activeTool,
 }: {
   className: string | undefined;
   points: Point[];
@@ -419,6 +425,7 @@ export default function CalibrationCanvas({
   transformSettings: TransformSettings;
   setTransformSettings: Dispatch<SetStateAction<TransformSettings>>;
   overlayMode: OverlayMode;
+  activeTool: Tool;
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const patternRef = useRef<CanvasPattern | null>(null);
@@ -568,6 +575,7 @@ useEffect(() => {
           transitionProgress,
           transformSettings,
           overlayMode,
+					activeTool
         )
         draw(cs);
       }
@@ -600,7 +608,8 @@ useEffect(() => {
     transitionProgress,
     transformSettings,
     isPrecisionMovement,
-    overlayMode
+    overlayMode,
+		activeTool
   ]);
 
   function getShortestDistance(p: Point): number {

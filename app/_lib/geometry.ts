@@ -241,21 +241,37 @@ export function decomposeTransformMatrix(matrix: Matrix): DecomposedTransform {
 }
 
 export function mirrorMatrix2Points(matrix: Matrix, point1: Point, point2: Point): Matrix {
-  // Calculate the slope and y-intercept of the line
-  const slope = (point2.y - point1.y) / (point2.x - point1.x);
-  const yIntercept = point1.y - slope * point1.x;
-
-  // Create the reflection matrix
-  const reflectionMatrix = new Matrix([
-    [1 - 2 * slope * slope, -2 * slope, 2 * slope * yIntercept],
-    [-2 * slope, -1 + 2 * slope * slope, 2 * yIntercept],
-    [0, 0, 1]
+	// Calculate the direction vector of the line
+  const direction = new Matrix([
+    [point2.x - point1.x],
+    [point2.y - point1.y],
+    [0]
   ]);
 
-  // Multiply the transformation matrix by the reflection matrix
-  const mirroredMatrix = matrix.mmul(reflectionMatrix);
+  // Calculate the normal vector by rotating the direction vector by 90 degrees
+  const normal = new Matrix([
+    [-direction.get(1, 0)],
+    [direction.get(0, 0)],
+    [0]
+  ]);
 
-  return mirroredMatrix;
+  // Normalize the normal vector
+  const normalizedNormal = normal.div(normal.norm());
+
+  // Construct a 3x3 matrix from the normalized normal vector
+  const N = new Matrix([
+    [normalizedNormal.get(0, 0), 0, 0],
+    [normalizedNormal.get(1, 0), 0, 0],
+    [normalizedNormal.get(2, 0), 0, 0]
+  ]);
+
+  // Construct the reflection matrix
+  const reflectionMatrix = Matrix.sub(Matrix.mul(N, N.transpose()).mul(2), Matrix.eye(3));
+
+  // Multiply the object's transformation matrix by the reflection matrix
+  const reflectedMatrix = matrix.mmul(reflectionMatrix);
+
+  return reflectedMatrix;
 }
 
 /* Applies an in-place vertical flip to the transformation matrix */

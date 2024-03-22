@@ -2,13 +2,13 @@ import { getPtDensity } from "@/_lib/unit";
 import Matrix from "ml-matrix";
 import { Point } from "@/_lib/point";
 import { TransformSettings } from "@/_lib/transform-settings";
+import { Tool } from "@/_lib/tools/tool";
 import {
   checkIsConcave
 } from "@/_lib/geometry";
 
 export class CanvasState {
   isConcave: boolean = false;
-
   lightColor: string = "#fff";
   darkColor: string = "#000";
   greenColor: string = "#32CD32" 
@@ -34,7 +34,8 @@ export class CanvasState {
     public errorFillPattern: CanvasPattern,
     public transitionProgress: number,
     public transformSettings: TransformSettings,
-    public overlayMode: OverlayMode
+    public overlayMode: OverlayMode,
+    public activeTool: Tool | null
   ) {
     this.isConcave = checkIsConcave(this.points);
     this.ptDensity = getPtDensity(unitOfMeasure);

@@ -33,6 +33,8 @@ import Tooltip from "@/_components/tooltip/tooltip";
 import { useTranslations } from "next-intl";
 import { EdgeInsets } from "@/_lib/edge-insets";
 import StitchMenu from "@/_components/stitch-menu";
+import { DrawLineTool } from "@/_lib/tools/draw-line";
+import { Tool } from "@/_lib/tools/tool";
 
 export default function Page() {
   // Default dimensions should be available on most cutting mats and large enough to get an accurate calibration
@@ -76,6 +78,8 @@ export default function Page() {
     horizontal: "",
     vertical: "",
   });
+
+  const [activeTool, setActiveTool] = useState<Tool | null>(new DrawLineTool());
 
   function getDefaultPoints() {
     const o = 150;
@@ -347,6 +351,7 @@ export default function Page() {
             transformSettings={transformSettings}
             setTransformSettings={setTransformSettings}
             overlayMode={overlayMode}
+						activeTool={activeTool}
           />
           <Draggable
             viewportClassName={`select-none ${visible(!isCalibrating)} bg-white dark:bg-black transition-all duration-700 `}
@@ -355,6 +360,8 @@ export default function Page() {
             setTransformSettings={setTransformSettings}
             perspective={perspective}
             unitOfMeasure={unitOfMeasure}
+						activeTool={activeTool}
+						setActiveTool={setActiveTool}
           >
             <div
               className={"absolute z-0"}
