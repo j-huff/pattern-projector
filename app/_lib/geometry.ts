@@ -42,8 +42,7 @@
 //M*/
 
 import { Point } from "@/_lib/point";
-import { AbstractMatrix, Matrix, solve } from 'ml-matrix';
-
+import { AbstractMatrix, Matrix, solve } from "ml-matrix";
 
 /** Calculates a perspective transform from four pairs of the corresponding points.
  *
@@ -78,10 +77,7 @@ import { AbstractMatrix, Matrix, solve } from 'ml-matrix';
  * @param dst - Coordinates of the corresponding quadrangle vertices in the destination image starting from top left clockwise.
  * @returns A 3x3 matrix of a perspective transform.
  */
-export function getPerspectiveTransform(
-  src: Point[],
-  dst: Point[]
-): Matrix {
+export function getPerspectiveTransform(src: Point[], dst: Point[]): Matrix {
   const a: number[][] = Array.from(Array(8), () => Array(8));
   const b: number[] = new Array(8);
 
@@ -125,10 +121,12 @@ export function getPerspectiveTransform(
   return s;
 }
 
-
-function getDstVertices(width: number, height: number, ptDensity: number): Point[] {
-
-  const dx = +width * ptDensity * 0.5;;
+function getDstVertices(
+  width: number,
+  height: number,
+  ptDensity: number,
+): Point[] {
+  const dx = +width * ptDensity * 0.5;
   const dy = +height * ptDensity * 0.5;
 
   const dstVertices = [
@@ -148,10 +146,16 @@ export function getPerspectiveTransformFromPoints(
   ptDensity: number,
   reverse?: boolean,
 ): Matrix {
-  if (reverse){
-    return getPerspectiveTransform(points, getDstVertices(width, height, ptDensity));
-  }else{
-    return getPerspectiveTransform(getDstVertices(width, height, ptDensity), points);
+  if (reverse) {
+    return getPerspectiveTransform(
+      points,
+      getDstVertices(width, height, ptDensity),
+    );
+  } else {
+    return getPerspectiveTransform(
+      getDstVertices(width, height, ptDensity),
+      points,
+    );
   }
 }
 
@@ -177,10 +181,14 @@ export function scale(s: number): Matrix {
   return Matrix.from1DArray(3, 3, [s, 0, 0, 0, s, 0, 0, 0, 1]);
 }
 
-export function rotateMatrixDeg(matrix: Matrix, angleDegrees: number, center?: Point): Matrix {
-	/* If no center of rotation provided, use the center of the object */
-	if (center === undefined)
-		center = { x: matrix.get(0,2), y: matrix.get(1,2) }
+export function rotateMatrixDeg(
+  matrix: Matrix,
+  angleDegrees: number,
+  center?: Point,
+): Matrix {
+  /* If no center of rotation provided, use the center of the object */
+  if (center === undefined)
+    center = { x: matrix.get(0, 2), y: matrix.get(1, 2) };
 
   /* Create the rotation matrix */
   const angleRadians = (angleDegrees * Math.PI) / 180;
@@ -194,15 +202,15 @@ export function rotateMatrixDeg(matrix: Matrix, angleDegrees: number, center?: P
 
   /* Create the translation matrices for shifting the center of rotation */
   let translationToOrigin = new Matrix([
-      [1, 0, -center.x],
-      [0, 1, -center.y],
-      [0, 0, 1],
-    ]);
+    [1, 0, -center.x],
+    [0, 1, -center.y],
+    [0, 0, 1],
+  ]);
   let translationBack = new Matrix([
-      [1, 0, center.x],
-      [0, 1, center.y],
-      [0, 0, 1],
-    ]);
+    [1, 0, center.x],
+    [0, 1, center.y],
+    [0, 0, 1],
+  ]);
 
   /* Apply the rotation around the specified center */
   const rotatedMatrix = translationBack
@@ -214,9 +222,9 @@ export function rotateMatrixDeg(matrix: Matrix, angleDegrees: number, center?: P
 }
 
 export class DecomposedTransform {
-  scale: Point = {x: 1, y: 1}
-  skew: Point = {x: 1, y: 1}
-  translation: Point = {x: 1, y: 1}
+  scale: Point = { x: 1, y: 1 };
+  skew: Point = { x: 1, y: 1 };
+  translation: Point = { x: 1, y: 1 };
   constructor(
     public a: number,
     public b: number,
@@ -225,9 +233,9 @@ export class DecomposedTransform {
     public tx: number,
     public ty: number,
   ) {
-    this.scale = {x:a, y:d}
-    this.skew = {x:b, y:c}
-    this.translation = {x: tx, y: ty}
+    this.scale = { x: a, y: d };
+    this.skew = { x: b, y: c };
+    this.translation = { x: tx, y: ty };
   }
 
   formatCss(): string {
@@ -236,7 +244,6 @@ export class DecomposedTransform {
   formatCssNoTranslation(): string {
     return `matrix(${this.a}, ${this.b}, ${this.c}, ${this.d}, 0, 0)`;
   }
-  
 }
 
 export function decomposeTransformMatrix(matrix: Matrix): DecomposedTransform {
@@ -249,12 +256,14 @@ export function decomposeTransformMatrix(matrix: Matrix): DecomposedTransform {
   const ty = matrix.get(1, 2);
 
   // Return the decomposed values as an object
-  return new DecomposedTransform(
-    a,b,c,d,tx,ty
-  );
+  return new DecomposedTransform(a, b, c, d, tx, ty);
 }
 
-export function mirrorMatrix2Points(matrix: Matrix, point1: Point, point2: Point): Matrix {
+export function mirrorMatrix2Points(
+  matrix: Matrix,
+  point1: Point,
+  point2: Point,
+): Matrix {
   // Calculate the slope and y-intercept of the line
   const slope = (point2.y - point1.y) / (point2.x - point1.x);
   const yIntercept = point1.y - slope * point1.x;
@@ -263,7 +272,7 @@ export function mirrorMatrix2Points(matrix: Matrix, point1: Point, point2: Point
   const reflectionMatrix = new Matrix([
     [1 - 2 * slope * slope, -2 * slope, 2 * slope * yIntercept],
     [-2 * slope, -1 + 2 * slope * slope, 2 * yIntercept],
-    [0, 0, 1]
+    [0, 0, 1],
   ]);
 
   // Multiply the transformation matrix by the reflection matrix
@@ -273,46 +282,55 @@ export function mirrorMatrix2Points(matrix: Matrix, point1: Point, point2: Point
 }
 
 /* Applies an in-place vertical flip to the transformation matrix */
-export function flipMatrixVertically(matrix: Matrix, yintercept?: number): Matrix {
-  const k = yintercept !== undefined ? yintercept : matrix.get(1,2);
+export function flipMatrixVertically(
+  matrix: Matrix,
+  yintercept?: number,
+): Matrix {
+  const k = yintercept !== undefined ? yintercept : matrix.get(1, 2);
   // Create a flip matrix to perform horizontal flipping
   const flipMatrix = new Matrix([
     [1, 0, 0],
-    [0, -1, 2*k],
-    [0, 0, 1]
+    [0, -1, 2 * k],
+    [0, 0, 1],
   ]);
-    
-  return flipMatrix.mmul(matrix)
+
+  return flipMatrix.mmul(matrix);
 }
 
 /* Applies a horizontal flip to the transformation matrix */
-export function flipMatrixHorizontally(matrix: Matrix, xintercept?: number): Matrix {
-  const k = xintercept !== undefined ? xintercept : matrix.get(0,2);
+export function flipMatrixHorizontally(
+  matrix: Matrix,
+  xintercept?: number,
+): Matrix {
+  const k = xintercept !== undefined ? xintercept : matrix.get(0, 2);
   // Create a flip matrix to perform horizontal flipping
   let flipMatrix = new Matrix([
-    [-1, 0, k*2],
+    [-1, 0, k * 2],
     [0, 1, 0],
-    [0, 0, 1]
+    [0, 0, 1],
   ]);
-  return flipMatrix.mmul(matrix)
+  return flipMatrix.mmul(matrix);
 }
 
 export function isMatrixFlippedVertically(matrix: Matrix): boolean {
-  const decomposedMatrix = decomposeTransformMatrix(matrix)
-  return decomposedMatrix.scale.y < 0; 
+  const decomposedMatrix = decomposeTransformMatrix(matrix);
+  return decomposedMatrix.scale.y < 0;
 }
 
 export function isMatrixFlippedHorizontally(matrix: Matrix): boolean {
-  const decomposedMatrix = decomposeTransformMatrix(matrix)
-  return decomposedMatrix.scale.x < 0; 
+  const decomposedMatrix = decomposeTransformMatrix(matrix);
+  return decomposedMatrix.scale.x < 0;
 }
 
 /* Overrides the translation component of destMatrix with the srcMatrix's */
-export function overrideTranslationFromMatrix(destMatrix: Matrix, srcMatrix: Matrix): Matrix {
+export function overrideTranslationFromMatrix(
+  destMatrix: Matrix,
+  srcMatrix: Matrix,
+): Matrix {
   const tx = srcMatrix.get(0, 2);
   const ty = srcMatrix.get(1, 2);
 
-  let newMatrix = destMatrix.clone()
+  let newMatrix = destMatrix.clone();
   newMatrix.set(0, 2, tx);
   newMatrix.set(1, 2, ty);
 
@@ -326,7 +344,7 @@ export function extractTranslationMatrix(matrix: Matrix): Matrix {
   return new Matrix([
     [1, 0, tx],
     [0, 1, ty],
-    [0, 0, 1]
+    [0, 0, 1],
   ]);
 }
 
@@ -343,8 +361,8 @@ export function scaleMatrixTranslation(matrix: Matrix, scale: number): Matrix {
 /* Extracts only the rotation and scale portion of the transformation matrix */
 export function extractRotationScaleMatrix(matrix: Matrix): Matrix {
   const newMatrix = matrix.clone();
-  newMatrix.set(0,2,0);
-  newMatrix.set(1,2,0);
+  newMatrix.set(0, 2, 0);
+  newMatrix.set(1, 2, 0);
   return newMatrix;
 }
 
@@ -383,7 +401,10 @@ export function minIndex(a: number[]): number {
 
 export function interp(from: Point, to: Point, portion: number): Point {
   const rest = 1.0 - portion;
-  return { x: to.x * portion + from.x * rest, y: to.y * portion + from.y * rest };
+  return {
+    x: to.x * portion + from.x * rest,
+    y: to.y * portion + from.y * rest,
+  };
 }
 
 /* Returns true if the list of points define a concave polygon, false otherwise */
@@ -413,7 +434,8 @@ export function checkIsConcave(points: Point[]): boolean {
 }
 
 function getOrientation(p1: Point, p2: Point, p3: Point): number {
-  const crossProduct = (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x);
+  const crossProduct =
+    (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x);
   if (crossProduct < 0) {
     return -1; // Clockwise orientation
   } else if (crossProduct > 0) {
@@ -423,7 +445,12 @@ function getOrientation(p1: Point, p2: Point, p3: Point): number {
   }
 }
 
-export function constrainInSpace(p: Point, anchorPoint: Point, matrix: Matrix, inverse: Matrix): Point {
+export function constrainInSpace(
+  p: Point,
+  anchorPoint: Point,
+  matrix: Matrix,
+  inverse: Matrix,
+): Point {
   const p1 = transformPoint(p, matrix);
   const p2 = transformPoint(anchorPoint, matrix);
   const c = constrained(p1, p2);

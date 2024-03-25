@@ -124,8 +124,8 @@ export default function Header({
     if (transformSettings.matrix !== null) {
       let tx = 0;
       let ty = 0;
-      
-      const m = translate({ x: tx, y: ty});
+
+      const m = translate({ x: tx, y: ty });
       const newTransformMatrix = overrideTranslationFromMatrix(
         transformSettings.matrix,
         m,
@@ -146,27 +146,27 @@ export default function Header({
   }, [fullScreenHandle.active]);
 
   const overlayOptions = {
-    "disabled":{
+    disabled: {
       icon: <GridOffIcon ariaLabel={t("overlayOptionDisabled")} />,
       text: t("overlayOptionDisabled"),
       selected: displaySettings.overlay.disabled,
     },
-    "grid":{
+    grid: {
       icon: <GridOnIcon ariaLabel={t("overlayOptionGrid")} />,
       text: t("overlayOptionGrid"),
       selected: displaySettings.overlay.grid,
     },
-    "border":{
+    border: {
       icon: <OverlayBorderIcon ariaLabel={t("overlayOptionBorder")} />,
       text: t("overlayOptionBorder"),
       selected: displaySettings.overlay.border,
     },
-    "paper":{
+    paper: {
       icon: <OverlayPaperIcon ariaLabel={t("overlayOptionPaper")} />,
       text: t("overlayOptionPaper"),
       selected: displaySettings.overlay.paper,
     },
-    "fliplines":{
+    fliplines: {
       icon: <FlipCenterOnIcon ariaLabel={t("overlayOptionFliplines")} />,
       text: t("overlayOptionFliplines"),
       selected: displaySettings.overlay.fliplines,
@@ -356,10 +356,10 @@ export default function Header({
               setSelectedOptions={(options) => {
                 setDisplaySettings({
                   ...displaySettings,
-									overlay: {
-										...displaySettings.overlay,
-										...options
-									},
+                  overlay: {
+                    ...displaySettings.overlay,
+                    ...options,
+                  },
                 });
               }}
             />
@@ -367,10 +367,10 @@ export default function Header({
             <Tooltip description={t("flipHorizontal")}>
               <IconButton
                 onClick={() => {
-									setTransformSettings({
-										...transformSettings,
-										matrix: flipMatrixHorizontally(transformSettings.matrix, 0),
-									})
+                  setTransformSettings({
+                    ...transformSettings,
+                    matrix: flipMatrixHorizontally(transformSettings.matrix, 0),
+                  });
                 }}
               >
                 <FlipVerticalIcon ariaLabel={t("flipHorizontal")} />
@@ -379,10 +379,10 @@ export default function Header({
             <Tooltip description={t("flipVertical")}>
               <IconButton
                 onClick={() => {
-									setTransformSettings({
-										...transformSettings,
-										matrix: flipMatrixVertically(transformSettings.matrix, 0),
-									})
+                  setTransformSettings({
+                    ...transformSettings,
+                    matrix: flipMatrixVertically(transformSettings.matrix, 0),
+                  });
                 }}
               >
                 <FlipHorizontalIcon ariaLabel={t("flipVertical")} />
@@ -393,7 +393,10 @@ export default function Header({
                 onClick={() =>
                   setTransformSettings({
                     ...transformSettings,
-                    matrix: rotateMatrixDeg(transformSettings.matrix, 90, { x: 0, y: 0 }),
+                    matrix: rotateMatrixDeg(transformSettings.matrix, 90, {
+                      x: 0,
+                      y: 0,
+                    }),
                   })
                 }
               >

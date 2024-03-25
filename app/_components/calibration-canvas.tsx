@@ -136,25 +136,21 @@ function draw(cs: CanvasState): void {
      * fill pattern */
     drawPolygon(ctx, cs.points, cs.errorFillPattern);
   } else {
-		/* Draw projection page */
-		if (!cs.displaySettings.overlay.disabled)
-			drawOverlays(cs)
+    /* Draw projection page */
+    if (!cs.displaySettings.overlay.disabled) drawOverlays(cs);
   }
 }
 
 function drawOverlays(cs: CanvasState) {
-	const o = cs.displaySettings.overlay;
-	const ctx = cs.ctx;
-	if (o.grid){
-		ctx.strokeStyle = cs.projectionGridLineColor
-		drawGrid(cs, 8, [1]) 
-	}
-	if (o.border)
-		drawBorder(cs, cs.darkColor, cs.gridLineColor);
-	if (o.paper)
-		drawPaperSheet(cs);
-	if (o.fliplines)
-		drawCenterLines(cs);
+  const o = cs.displaySettings.overlay;
+  const ctx = cs.ctx;
+  if (o.grid) {
+    ctx.strokeStyle = cs.projectionGridLineColor;
+    drawGrid(cs, 8, [1]);
+  }
+  if (o.border) drawBorder(cs, cs.darkColor, cs.gridLineColor);
+  if (o.paper) drawPaperSheet(cs);
+  if (o.fliplines) drawCenterLines(cs);
 }
 
 function drawCenterLines(cs: CanvasState) {
@@ -165,50 +161,43 @@ function drawCenterLines(cs: CanvasState) {
   const center = {
     x: 0.0,
     y: 0.0,
-  }
+  };
 
   /* Center Projected */
-  const centerP = transformPoint(
-    center,
-    cs.perspective,
-  );
+  const centerP = transformPoint(center, cs.perspective);
 
   /* Half width and half height */
-  const hw = (cs.width/2);
-  const hh = (cs.height/2);
+  const hw = cs.width / 2;
+  const hh = cs.height / 2;
 
   const yAxisPoints = [
     {
       x: 0.0,
       y: -hh,
-    },{
+    },
+    {
       x: 0.0,
       y: hh,
-    }
-  ]
+    },
+  ];
 
   const xAxisPoints = [
     {
       x: -hw,
       y: 0.0,
-    },{
+    },
+    {
       x: hw,
       y: 0.0,
-    }
-  ]
+    },
+  ];
 
-  const projectedY = transformPoints(
-    yAxisPoints,
-    cs.perspective,
-  );
-  const projectedX = transformPoints(
-    xAxisPoints,
-    cs.perspective,
-  );
+  const projectedY = transformPoints(yAxisPoints, cs.perspective);
+  const projectedX = transformPoints(xAxisPoints, cs.perspective);
 
   const lineWidth = 3;
   ctx.setLineDash([5, 1]);
-  ctx.strokeStyle = cs.projectionGridLineColor; 
+  ctx.strokeStyle = cs.projectionGridLineColor;
 
   drawLine(ctx, projectedY[0], projectedY[1], lineWidth);
   ctx.stroke();
@@ -259,29 +248,32 @@ function drawPaperSheet(cs: CanvasState) {
   const center = {
     x: 0,
     y: 0,
-  }
+  };
 
   /* Center Projected */
   const centerP = transformPoint(center, cs.perspective);
 
-  const hw = paperWidth/2;
-  const hh = paperHeight/2;
+  const hw = paperWidth / 2;
+  const hh = paperHeight / 2;
 
   const corners = [
     {
       x: -hw,
-      y: -hh
-    },{
+      y: -hh,
+    },
+    {
       x: hw,
       y: -hh,
-    },{
+    },
+    {
       x: hw,
       y: hh,
-    },{
+    },
+    {
       x: -hw,
       y: hh,
-    }
-  ]
+    },
+  ];
 
   /* Center the page to 'center' */
   const cornersCentered = corners.map((p) => {
@@ -606,14 +598,13 @@ export default function CalibrationCanvas({
       localPoints &&
       localPoints.length === maxPoints
     ) {
-
       /* All drawing is done in unitsOfMeasure, ptDensity = 1.0 */
       let perspective_mtx = getPerspectiveTransformFromPoints(
         localPoints,
         width,
         height,
         1.0,
-        false
+        false,
       );
 
       const canvas = canvasRef.current;

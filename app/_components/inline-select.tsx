@@ -1,5 +1,5 @@
 import { ChangeEvent } from "react";
-import {SelectOption} from "@/_lib/select-option";
+import { SelectOption } from "@/_lib/select-option";
 
 /**
  * Controlled labelled text input

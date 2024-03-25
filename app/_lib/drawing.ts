@@ -2,16 +2,14 @@ import { getPtDensity } from "@/_lib/unit";
 import Matrix from "ml-matrix";
 import { Point } from "@/_lib/point";
 import { DisplaySettings } from "@/_lib/display-settings";
-import {
-  checkIsConcave
-} from "@/_lib/geometry";
+import { checkIsConcave } from "@/_lib/geometry";
 
 export class CanvasState {
   isConcave: boolean = false;
 
   lightColor: string = "#fff";
   darkColor: string = "#000";
-  greenColor: string = "#32CD32" 
+  greenColor: string = "#32CD32";
   bgColor: string = "#fff";
   fillColor: string = "#000";
   gridLineColor: string = "#fff";
@@ -50,22 +48,22 @@ export function createCheckerboardPattern(
   ctx: CanvasRenderingContext2D,
   size: number = 3,
   color1: string = "black",
-  color2: string = "#CCC"
-  ): CanvasPattern {
+  color2: string = "#CCC",
+): CanvasPattern {
   /* We first create a new canvas on which to draw the pattern */
-  const patternCanvas = document.createElement('canvas');
+  const patternCanvas = document.createElement("canvas");
   try {
-    const patternCtx = patternCanvas.getContext('2d');
+    const patternCtx = patternCanvas.getContext("2d");
 
     if (!patternCtx) {
-      throw new Error('Failed to get 2D context from pattern canvas');
+      throw new Error("Failed to get 2D context from pattern canvas");
     }
-  
-    /* Integer which defines the size of a checkboard square (in pixels) */
-    size = Math.round(size)
 
-    patternCanvas.width = size*2;
-    patternCanvas.height = size*2;
+    /* Integer which defines the size of a checkboard square (in pixels) */
+    size = Math.round(size);
+
+    patternCanvas.width = size * 2;
+    patternCanvas.height = size * 2;
 
     /* Draw the checkerboard pattern */
     patternCtx.fillStyle = color1;
@@ -76,10 +74,10 @@ export function createCheckerboardPattern(
     patternCtx.fillRect(0, size, size, size);
 
     /* Create the pattern from the canvas */
-    const pattern = ctx.createPattern(patternCanvas, 'repeat');
+    const pattern = ctx.createPattern(patternCanvas, "repeat");
 
     if (!pattern) {
-      throw new Error('Failed to create pattern from canvas');
+      throw new Error("Failed to create pattern from canvas");
     }
 
     return pattern;
@@ -91,33 +89,43 @@ export function createCheckerboardPattern(
 
 /* Interpolates between the colors in the given array based on "value".
  * "value" should be a number between zero and len(colors). */
-export function interpolateColorRing(colors: string[], value: number, useEaseInOut: boolean = true): string {
+export function interpolateColorRing(
+  colors: string[],
+  value: number,
+  useEaseInOut: boolean = true,
+): string {
   const len = colors.length;
-  
+
   // Normalize the value to be between 0 and len
   const normalizedValue = ((value % len) + len) % len;
-  
+
   // Find the indices of the two colors to interpolate between
   const startIndex = Math.floor(normalizedValue);
   const endIndex = (startIndex + 1) % len;
-  
+
   // Calculate the portion for interpolation
   let portion = normalizedValue - startIndex;
 
   // Apply the easing function if set
   if (useEaseInOut) {
     portion = easeInOut(portion);
-  }  
+  }
   // Get the start and end colors
   const startColor = colors[startIndex];
   const endColor = colors[endIndex];
-  
+
   // Interpolate between the start and end colors using the interpolateColors function
   return interpolateColor(startColor, endColor, portion);
 }
 
 /* Reworked from https://github.com/thednp/bezier-easing */
-export function cubicBezierTiming(t: number, x1?: number, y1?: number, x2?: number, y2?: number): number {
+export function cubicBezierTiming(
+  t: number,
+  x1?: number,
+  y1?: number,
+  x2?: number,
+  y2?: number,
+): number {
   const p1x = x1 || 0;
   const p1y = y1 || 0;
   const p2x = x2 || 1;
@@ -131,16 +139,16 @@ export function cubicBezierTiming(t: number, x1?: number, y1?: number, x2?: numb
 
   const sampleCurveY = (t: number): number => {
     return ((ay * t + by) * t + cy) * t;
-  }
+  };
 
   const sampleCurveX = (t: number): number => {
     return ((ax * t + bx) * t + cx) * t;
-  }
-  
+  };
+
   const sampleCurveDerivativeX = (t: number): number => {
     return (3 * ax * t + 2 * bx) * t + cx;
-  }
-  
+  };
+
   const solveCurveX = (x: number): number => {
     // Set Precision
     const epsilon = 1e-6;
@@ -181,7 +189,7 @@ export function cubicBezierTiming(t: number, x1?: number, y1?: number, x2?: numb
     // Give up
     /* istanbul ignore next */
     return t2;
-  }
+  };
 
   return sampleCurveY(solveCurveX(t));
 }
@@ -193,36 +201,40 @@ function easeInOut(t: number): number {
 
 /* Interpolates between two colors given 'portion', a number between 0 and 1.
  * Acceptable formats: #rgb #rrggbb rgba(r,g,b) rgba(r,g,b,a) */
-export function interpolateColor(color1: string, color2: string, portion: number): string {
+export function interpolateColor(
+  color1: string,
+  color2: string,
+  portion: number,
+): string {
   // Helper function to parse color components from a string
   const parseColor = (color: string): number[] => {
-    if (color.startsWith('#')) {
+    if (color.startsWith("#")) {
       const hex = color.slice(1);
       if (hex.length === 3) {
-        return hex.split('').map(c => parseInt(c.repeat(2), 16) / 255);
+        return hex.split("").map((c) => parseInt(c.repeat(2), 16) / 255);
       } else if (hex.length === 6) {
         return [
           parseInt(hex.slice(0, 2), 16) / 255,
           parseInt(hex.slice(2, 4), 16) / 255,
-          parseInt(hex.slice(4, 6), 16) / 255
+          parseInt(hex.slice(4, 6), 16) / 255,
         ];
       }
-    } else if (color.startsWith('rgb')) {
+    } else if (color.startsWith("rgb")) {
       const components = color.match(/[\d.]+/g)?.map(parseFloat) || [];
       if (components.length === 3 || components.length === 4) {
         return components.slice(0, 3);
       }
     }
-    throw new Error('Invalid color format');
+    throw new Error("Invalid color format");
   };
 
   // Helper function to convert RGB components to a hex string
   const rgbToHex = (r: number, g: number, b: number): string => {
     const toHex = (value: number) => {
       const hex = Math.round(value * 255).toString(16);
-      return hex.length === 1 ? '0' + hex : hex;
+      return hex.length === 1 ? "0" + hex : hex;
     };
-    return '#' + toHex(r) + toHex(g) + toHex(b);
+    return "#" + toHex(r) + toHex(g) + toHex(b);
   };
 
   const [r1, g1, b1] = parseColor(color1);
@@ -232,13 +244,22 @@ export function interpolateColor(color1: string, color2: string, portion: number
   const g = g1 + (g2 - g1) * portion;
   const b = b1 + (b2 - b1) * portion;
 
-  if (color1.startsWith('#') && color1.length === 4) {
+  if (color1.startsWith("#") && color1.length === 4) {
     return rgbToHex(r, g, b);
-  } else if (color1.startsWith('#')) {
-    return '#' + [r, g, b].map(c => Math.round(c * 255).toString(16).padStart(2, '0')).join('');
-  } else if (color1.startsWith('rgba')) {
-    const a1 = parseFloat(color1.match(/[\d.]+/g)?.[3] || '1');
-    const a2 = parseFloat(color2.match(/[\d.]+/g)?.[3] || '1');
+  } else if (color1.startsWith("#")) {
+    return (
+      "#" +
+      [r, g, b]
+        .map((c) =>
+          Math.round(c * 255)
+            .toString(16)
+            .padStart(2, "0"),
+        )
+        .join("")
+    );
+  } else if (color1.startsWith("rgba")) {
+    const a1 = parseFloat(color1.match(/[\d.]+/g)?.[3] || "1");
+    const a2 = parseFloat(color2.match(/[\d.]+/g)?.[3] || "1");
     const a = a1 + (a2 - a1) * portion;
     return `rgba(${r},${g},${b},${a})`;
   } else {

@@ -1,4 +1,4 @@
-import { Matrix, inverse} from "ml-matrix";
+import { Matrix, inverse } from "ml-matrix";
 import { getPtDensity } from "@/_lib/unit";
 import {
   Dispatch,
@@ -9,14 +9,16 @@ import {
   useState,
   useRef,
   useEffect,
-  useCallback
+  useCallback,
 } from "react";
 
+import { transformPoint, translate } from "@/_lib/geometry";
 import {
-  transformPoint,
-  translate,
-} from "@/_lib/geometry";
-import { mouseToCanvasPoint, Point, touchToCanvasPoint, nativeMouseToCanvasPoint} from "@/_lib/point";
+  mouseToCanvasPoint,
+  Point,
+  touchToCanvasPoint,
+  nativeMouseToCanvasPoint,
+} from "@/_lib/point";
 import { TransformSettings } from "@/_lib/transform-settings";
 
 export default function Draggable({
@@ -43,7 +45,7 @@ export default function Draggable({
   const [isIdle, setIsIdle] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const AXIS_LOCK_KEYBIND = 'Shift';
+  const AXIS_LOCK_KEYBIND = "Shift";
   const IDLE_TIMEOUT = 1500;
 
   const handleKeyDown = useCallback(
@@ -51,11 +53,9 @@ export default function Draggable({
       if (e.key === AXIS_LOCK_KEYBIND) {
         e.preventDefault();
         setIsAxisLocked(true);
-      } 
+      }
     },
-    [
-      setIsAxisLocked,
-    ],
+    [setIsAxisLocked],
   );
 
   const handleKeyUp = useCallback(
@@ -63,17 +63,15 @@ export default function Draggable({
       if (e.key === AXIS_LOCK_KEYBIND) {
         e.preventDefault();
         setIsAxisLocked(false);
-      } 
+      }
     },
-    [
-      setIsAxisLocked,
-    ],
+    [setIsAxisLocked],
   );
 
   /* This effect causes the position of the div to update instantly if
    isAxisLocked changes, rather than needing the mouse to move first */
   useEffect(() => {
-    if (dragStart !==null && isAxisLocked && currentMousePos !== null) {
+    if (dragStart !== null && isAxisLocked && currentMousePos !== null) {
       handleMove(currentMousePos);
     }
   }, [dragStart, isAxisLocked, currentMousePos]);
@@ -83,7 +81,9 @@ export default function Draggable({
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
-    timeoutRef.current = setTimeout(()=>{setIsIdle(true)}, IDLE_TIMEOUT);
+    timeoutRef.current = setTimeout(() => {
+      setIsIdle(true);
+    }, IDLE_TIMEOUT);
   }
 
   function handleOnEnd(): void {
@@ -98,8 +98,8 @@ export default function Draggable({
       return;
     }
 
-    const newMousePos = mouseToCanvasPoint(e)
-    setCurrentMousePos(newMousePos)
+    const newMousePos = mouseToCanvasPoint(e);
+    setCurrentMousePos(newMousePos);
 
     if ((e.buttons & 1) === 0 && dragStart !== null) {
       handleOnEnd();
@@ -108,11 +108,11 @@ export default function Draggable({
     handleMove(newMousePos);
   }
 
-  function toSingleAxisVector(vec: Point): Point{
-    if (Math.abs(vec.x) > Math.abs(vec.y)){
-      return {x: vec.x, y:0} 
+  function toSingleAxisVector(vec: Point): Point {
+    if (Math.abs(vec.x) > Math.abs(vec.y)) {
+      return { x: vec.x, y: 0 };
     } else {
-      return {x: 0, y:vec.y} 
+      return { x: 0, y: vec.y };
     }
   }
 
@@ -122,16 +122,16 @@ export default function Draggable({
       const dest = transformPoint(p, perspective);
       const tx = dest.x - dragStart.x;
       const ty = dest.y - dragStart.y;
-      let vec = {x: tx/ptDensity, y:ty/ptDensity};
-      if (isAxisLocked){
+      let vec = { x: tx / ptDensity, y: ty / ptDensity };
+      if (isAxisLocked) {
         vec = toSingleAxisVector(vec);
       }
       const m = translate(vec);
       const newTransformMatrix = m.mmul(transformStart);
       setTransformSettings({
-       ...transformSettings,
+        ...transformSettings,
         matrix: newTransformMatrix,
-      })
+      });
     }
   }
 
@@ -141,14 +141,14 @@ export default function Draggable({
     setTransformStart(transformSettings.matrix.clone());
   }
 
-  let cursorMode = `${dragStart !== null ? 'grabbing' : 'grab'}`;
-  let viewportCursorMode = `${dragStart !== null ? 'grabbing': 'default'}`;
+  let cursorMode = `${dragStart !== null ? "grabbing" : "grab"}`;
+  let viewportCursorMode = `${dragStart !== null ? "grabbing" : "default"}`;
 
   /* If we aren't dragging and the idle timer has set isIdle
    * to true, hide the cursor */
   if (dragStart === null && isIdle) {
-    cursorMode = 'none';
-    viewportCursorMode = 'none';
+    cursorMode = "none";
+    viewportCursorMode = "none";
   }
 
   return (
@@ -161,18 +161,20 @@ export default function Draggable({
       onKeyUp={handleKeyUp}
       onKeyDown={handleKeyDown}
       style={{
-        cursor:viewportCursorMode
+        cursor: viewportCursorMode,
       }}
     >
       <div
         className={className}
-        onMouseDown={(e) => {handleOnStart(mouseToCanvasPoint(e))}}
+        onMouseDown={(e) => {
+          handleOnStart(mouseToCanvasPoint(e));
+        }}
         onTouchMove={(e) => handleMove(touchToCanvasPoint(e))}
         onTouchStart={(e) => handleOnStart(touchToCanvasPoint(e))}
         onTouchEnd={handleOnEnd}
         onMouseUp={handleOnEnd}
         style={{
-          cursor:cursorMode
+          cursor: cursorMode,
         }}
         // TODO: consider theses style={{ mixBlendMode: "hard-light" }}
       >

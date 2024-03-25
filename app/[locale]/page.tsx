@@ -14,7 +14,7 @@ import PdfIcon from "../_icons/pdf-icon";
 import Rotate90DegreesCWIcon from "../_icons/rotate-90-degrees-cw-icon";
 import RecenterIcon from "@/_icons/recenter-icon";
 import Tooltip from "@/_components/tooltip/tooltip";
-import LanguageSwitcher from '@/_components/language-switcher';
+import LanguageSwitcher from "@/_components/language-switcher";
 import { IconButton } from "@/_components/buttons/icon-button";
 
 export default function Home() {
@@ -27,7 +27,10 @@ export default function Home() {
       <nav className="flex items-center gap-2">
         <PatternProjectorIcon ariaLabel="" />
         <span className="font-bold">{t("beta")}</span>
-        <LanguageSwitcher ariaLabel={t("choose-language")} className="ml-auto"/>
+        <LanguageSwitcher
+          ariaLabel={t("choose-language")}
+          className="ml-auto"
+        />
         <Tooltip description={t("github")}>
           <IconButton href="https://github.com/Pattern-Projector/pattern-projector">
             <GithubIcon ariaLabel={t("github")} />
