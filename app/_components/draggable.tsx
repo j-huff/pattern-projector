@@ -40,10 +40,12 @@ export default function Draggable({
   const [currentMousePos, setCurrentMousePos] = useState<Point | null>(null);
   const [transformStart, setTransformStart] = useState<Matrix | null>(null);
   const [isAxisLocked, setIsAxisLocked] = useState<Boolean>(false);
+  const [gridSnapping, setGridSnapping] = useState<Boolean>(false);
   const [isIdle, setIsIdle] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const AXIS_LOCK_KEYBIND = 'Shift';
+  const GRID_SNAPPING_KEYBIND = 'g';
   const IDLE_TIMEOUT = 1500;
 
   const handleKeyDown = useCallback(
@@ -51,10 +53,14 @@ export default function Draggable({
       if (e.key === AXIS_LOCK_KEYBIND) {
         e.preventDefault();
         setIsAxisLocked(true);
-      } 
+      } else if (e.key === GRID_SNAPPING_KEYBIND) {
+        e.preventDefault();
+        setGridSnapping(true);
+      }
     },
     [
       setIsAxisLocked,
+      setGridSnapping,
     ],
   );
 
@@ -63,10 +69,14 @@ export default function Draggable({
       if (e.key === AXIS_LOCK_KEYBIND) {
         e.preventDefault();
         setIsAxisLocked(false);
+      } else if (e.key === GRID_SNAPPING_KEYBIND) {
+        e.preventDefault();
+        setGridSnapping(false);
       } 
     },
     [
       setIsAxisLocked,
+      setGridSnapping,
     ],
   );
 
@@ -76,7 +86,7 @@ export default function Draggable({
     if (dragStart !==null && isAxisLocked && currentMousePos !== null) {
       handleMove(currentMousePos);
     }
-  }, [dragStart, isAxisLocked, currentMousePos]);
+  }, [dragStart, isAxisLocked, gridSnapping, currentMousePos]);
 
   function resetIdle() {
     setIsIdle(false);
@@ -116,6 +126,10 @@ export default function Draggable({
     }
   }
 
+  function snapToGrid(vec: Point): Point{
+    return {x: Math.round(vec.x), y: Math.round(vec.y)}
+  }
+
   function handleMove(p: Point) {
     if (transformStart !== null && dragStart !== null) {
       const ptDensity = getPtDensity(unitOfMeasure);
@@ -123,8 +137,13 @@ export default function Draggable({
       const tx = dest.x - dragStart.x;
       const ty = dest.y - dragStart.y;
       let vec = {x: tx/ptDensity, y:ty/ptDensity};
-      if (isAxisLocked){
+      if (isAxisLocked) {
         vec = toSingleAxisVector(vec);
+      }
+      if (gridSnapping) {
+        console.log("before ", JSON.stringify(vec))
+        vec = snapToGrid(vec);
+        console.log("after ", JSON.stringify(vec))
       }
       const m = translate(vec);
       const newTransformMatrix = m.mmul(transformStart);
