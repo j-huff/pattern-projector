@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, useRef } from "react";
 import { useKeyDown } from "@/_hooks/use-key-down";
 import { useKeyUp } from "@/_hooks/use-key-up";
+import { useKeyHeld } from "@/_hooks/use-key-held";
 import { KeyCode } from "@/_lib/key-code";
 
 const PIXEL_LIST = [2, 20, 50, 100];
@@ -12,27 +13,24 @@ export default function useProgArrowKeyHandler(
 ) {
   const [pixelIdx, setPixelIdx] = useState<number>(0);
   const [timeoutFunc, setTimeoutFunc] = useState<NodeJS.Timeout | null>();
-  const shiftPressedRef= useRef<boolean>(false);
+  const [shiftHeld, setShiftHeld] = useState<boolean>(false);
 
-  const arrowKeyHandler = useCallback(
-    function (keycode: KeyCode) {
-      if (!active)
-        return;
-      if (!timeoutFunc && pixelIdx < pixelList.length - 1) {
-        setTimeoutFunc(
-          setTimeout(() => {
-            setPixelIdx(pixelIdx + 1);
-            setTimeoutFunc(null);
-          }, 600),
-        );
-      }
-      const pixelValue = shiftPressedRef.current
-        ? pixelList[pixelIdx] * modifierScale
-        : pixelList[pixelIdx];
-      handler(keycode, pixelValue);
-    },
-    [timeoutFunc, pixelIdx, handler, pixelList],
-  );
+  function arrowKeyHandler(keycode: KeyCode) {
+    if (!active)
+      return;
+    if (!timeoutFunc && pixelIdx < pixelList.length - 1) {
+      setTimeoutFunc(
+        setTimeout(() => {
+          setPixelIdx(pixelIdx + 1);
+          setTimeoutFunc(null);
+        }, 600),
+      );
+    }
+    const pixelValue = shiftHeld
+      ? pixelList[pixelIdx] * modifierScale
+      : pixelList[pixelIdx];
+    handler(keycode, pixelValue);
+  }
 
   const keyupHandler = useCallback(
     function () {
@@ -45,13 +43,11 @@ export default function useProgArrowKeyHandler(
     [timeoutFunc],
   );
 
-  useKeyDown(() => {
-    shiftPressedRef.current = true;
-  }, [KeyCode.ShiftLeft]);
-
-  useKeyUp(() => {
-    shiftPressedRef.current = false;
-  }, [KeyCode.ShiftLeft]);
+  useKeyHeld(
+    () => { if (active) setShiftHeld(true) },
+    () => { if (active) setShiftHeld(false) },
+    [KeyCode.ShiftLeft]
+  );
 
   useKeyDown(
     (key: KeyCode) => {
